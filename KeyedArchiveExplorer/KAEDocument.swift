@@ -9,10 +9,16 @@
 import Cocoa
 
 class KAEDocument: NSDocument {
-	var objects: Array<Any>!
-	var topItems: Array<KAEItem>!
+	var objects: [Any]
+	var topItems: [KAEItem]
 
 	@IBOutlet weak var outlineView: NSOutlineView?
+
+	override init() {
+		objects = []
+		topItems = []
+		super.init()
+	}
 
 	override class var autosavesInPlace: Bool {
 		return false
@@ -37,12 +43,12 @@ class KAEDocument: NSDocument {
 			fatalError("nope")
 		}
 
-		let top = dictionary["$top"] as! Dictionary<String, Any>
+		let top = dictionary["$top"] as! [String : Any]
 		topItems = top.map { (key, value) in
 			return KAEItem(key: key, value: value, document: self)
 		}
 
-		objects = (dictionary["$objects"] as! Array<Any>)
+		objects = (dictionary["$objects"] as! [Any])
 
 		outlineView?.reloadData()
 	}
@@ -64,18 +70,14 @@ extension KAEDocument: NSOutlineViewDataSource {
 	}
 
 	func outlineView(_ outlineView: NSOutlineView, numberOfChildrenOfItem item: Any?) -> Int {
-		if topItems != nil && objects != nil {
-			if item == nil {
-				return topItems.count
-			} else {
-				guard let item = item as? KAEItem else {
-					fatalError()
-				}
-
-				return item.subitems.count
-			}
+		if item == nil {
+			return topItems.count
 		} else {
-			return 0
+			guard let item = item as? KAEItem else {
+				fatalError()
+			}
+
+			return item.subitems.count
 		}
 	}
 

@@ -29,10 +29,10 @@ class KAEItem: NSObject {
 			// It's a reference.  See if it's a reference to an object or a value type.
 			let referent = document.objectForUID(uid)
 
-			if let dictionary = referent as? Dictionary<String, Any> {
+			if let dictionary = referent as? [String : Any] {
 				// Object.  Return $classname.
 				let classUID = CFKeyedArchiverUID(dictionary["$class"]!)!
-				let classDictionary = document.objectForUID(classUID) as! Dictionary<String, Any>
+				let classDictionary = document.objectForUID(classUID) as! [String : Any]
 				let className = classDictionary["$classname"] as! String
 
 				return className
@@ -57,7 +57,7 @@ class KAEItem: NSObject {
 			// It's a reference.  See if it's a reference to an object or to a value type.
 			let referent = document.objectForUID(uid)
 
-			if referent is Dictionary<String, Any> {
+			if referent is [String : Any] {
 				return "object (uid \(uid.intValue))"
 			} else if let nsObject = referent as? NSObject {
 				// Reference to NSObject directly.  Return its description.
@@ -79,7 +79,7 @@ class KAEItem: NSObject {
 		if let uid = CFKeyedArchiverUID(value) {
 			let referent = document.objectForUID(uid)
 
-			if let dictionary = referent as? Dictionary<String, Any> {
+			if let dictionary = referent as? [String : Any] {
 				return dictionary.compactMap({ (key, value) in
 					if key != "$classname" && key != "$classes" && key != "$class" {
 						return KAEItem(key: key, value: value, document: document)
