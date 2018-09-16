@@ -12,9 +12,9 @@ import Foundation
 class KAEItem: NSObject {
 	private let key: String
 	private let value: Any
-	private weak var document: KAEDocument?
+	private unowned var document: KAEDocument
 
-	init(key: String, value: Any, document: KAEDocument?) {
+	init(key: String, value: Any, document: KAEDocument) {
 		self.key = key
 		self.value = value
 		self.document = document
@@ -27,12 +27,12 @@ class KAEItem: NSObject {
 	@objc lazy var typeDescription: String = {
 		if let uid = CFKeyedArchiverUID(value) {
 			// It's a reference.  See if it's a reference to an object or a value type.
-			let referent = document?.objectForUID(uid)
+			let referent = document.objectForUID(uid)
 
 			if let dictionary = referent as? Dictionary<String, Any> {
 				// Object.  Return $classname.
 				let classUID = CFKeyedArchiverUID(dictionary["$class"]!)!
-				let classDictionary = document?.objectForUID(classUID) as! Dictionary<String, Any>
+				let classDictionary = document.objectForUID(classUID) as! Dictionary<String, Any>
 				let className = classDictionary["$classname"] as! String
 
 				return className
@@ -55,7 +55,7 @@ class KAEItem: NSObject {
 	@objc lazy var valueDescription: String = {
 		if let uid = CFKeyedArchiverUID(value) {
 			// It's a reference.  See if it's a reference to an object or to a value type.
-			let referent = document?.objectForUID(uid)
+			let referent = document.objectForUID(uid)
 
 			if referent is Dictionary<String, Any> {
 				return "object (uid \(uid.intValue))"
@@ -77,7 +77,7 @@ class KAEItem: NSObject {
 
 	lazy var subitems: [KAEItem] = {
 		if let uid = CFKeyedArchiverUID(value) {
-			let referent = document?.objectForUID(uid)
+			let referent = document.objectForUID(uid)
 
 			if let dictionary = referent as? Dictionary<String, Any> {
 				return dictionary.compactMap({ (key, value) in
