@@ -8,6 +8,12 @@
 
 import Cocoa
 
+enum KAEDocumentReadingError: Error {
+	case rootNotDictionary
+	case invalidTop
+	case invalidObjects
+}
+
 class KAEDocument: NSDocument {
 	var objects: [Any]
 	var topItems: [KAEItem]
@@ -37,18 +43,25 @@ class KAEDocument: NSDocument {
 	}
 
 	override func read(from data: Data, ofType typeName: String) throws {
-		let plist = try! PropertyListSerialization.propertyList(from: data, options: [], format: nil)
+		let plist = try PropertyListSerialization.propertyList(from: data, options: [], format: nil)
 
 		guard let dictionary = plist as? NSDictionary else {
-			fatalError("nope")
+			throw KAEDocumentReadingError.rootNotDictionary
 		}
 
-		let top = dictionary["$top"] as! [String : Any]
+		guard let top = dictionary["$top"] as? [String : Any] else {
+			throw KAEDocumentReadingError.invalidTop
+		}
+
+		guard let objectTable = dictionary["$objects"] as? [Any] else {
+			throw KAEDocumentReadingError.invalidObjects
+		}
+
 		topItems = top.map { (key, value) in
 			return KAEItem(key: key, value: value, document: self)
 		}
 
-		objects = (dictionary["$objects"] as! [Any])
+		objects = objectTable
 
 		outlineView?.reloadData()
 	}
