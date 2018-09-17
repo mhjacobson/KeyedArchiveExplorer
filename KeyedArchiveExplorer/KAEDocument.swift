@@ -8,13 +8,13 @@
 
 import Cocoa
 
-enum KAEDocumentReadingError: Error {
-	case rootNotDictionary
-	case invalidTop
-	case invalidObjects
-}
-
 class KAEDocument: NSDocument {
+	enum ReadingError: Error {
+		case rootNotDictionary
+		case invalidTop
+		case invalidObjects
+	}
+
 	var objects: [Any]
 	var topItems: [KAEItem]
 
@@ -46,15 +46,15 @@ class KAEDocument: NSDocument {
 		let plist = try PropertyListSerialization.propertyList(from: data, options: [], format: nil)
 
 		guard let dictionary = plist as? NSDictionary else {
-			throw KAEDocumentReadingError.rootNotDictionary
+			throw ReadingError.rootNotDictionary
 		}
 
 		guard let top = dictionary["$top"] as? [String : Any] else {
-			throw KAEDocumentReadingError.invalidTop
+			throw ReadingError.invalidTop
 		}
 
 		guard let objectTable = dictionary["$objects"] as? [Any] else {
-			throw KAEDocumentReadingError.invalidObjects
+			throw ReadingError.invalidObjects
 		}
 
 		topItems = top.map { (key, value) in
